@@ -7,6 +7,7 @@ const planSchema = new mongoose.Schema(
       required: [true, "Plan name is required"],
       enum: ["startup", "growing", "enterprise"],
       unique: true,
+      required: true,
     },
     displayName: {
       type: String,
@@ -64,7 +65,7 @@ const planSchema = new mongoose.Schema(
   {
     timestamps: true,
     toJSON: { virtuals: true },
-  }
+  },
 );
 
 // Virtual: monthly price in dollars
