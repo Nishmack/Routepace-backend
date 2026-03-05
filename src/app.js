@@ -31,7 +31,7 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 
 // ─── Stripe webhooks need raw body (must be before express.json) ─────────────
@@ -76,7 +76,11 @@ app.get("/health", (req, res) => {
     environment: process.env.NODE_ENV,
   });
 });
-
+app.get("/", (req, res) => {
+  res.json({
+    message: "RoutePace Backend API Running Successfully",
+  });
+});
 // ─── API Routes ───────────────────────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
