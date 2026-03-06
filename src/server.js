@@ -1,26 +1,17 @@
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
+const { connectDB } = require("./config/db");
 
 dotenv.config();
 
 const app = require("./app");
 
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/routepace";
 
 process.on("uncaughtException", (err) => {
   console.error("UNCAUGHT EXCEPTION!", err.name, err.message);
   process.exit(1);
 });
-
-// Cached connection for Vercel serverless environment
-let isConnected = false;
-const connectDB = async () => {
-  if (isConnected) return;
-  await mongoose.connect(MONGODB_URI);
-  isConnected = true;
-  console.log("MongoDB connected:", mongoose.connection.host);
-};
 
 if (process.env.NODE_ENV !== "production") {
   // Local dev: start server normally

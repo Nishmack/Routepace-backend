@@ -4,6 +4,7 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const { errorHandler, notFound } = require("./middleware/errorHandler");
+const { ensureDbConnection } = require("./config/db");
 
 // Route imports
 const authRoutes = require("./routes/authRoutes");
@@ -25,14 +26,25 @@ const app = express();
 app.use(helmet());
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  process.env.CLIENT_URL,
+  "https://www.routepace.com",
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "https://www.routepace.com",
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      cb(null, false);
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
+app.options("*", cors());
 
 // ─── Stripe webhooks need raw body (must be before express.json) ─────────────
 app.use("/api/webhooks", express.raw({ type: "application/json" }), webhookRoutes);
@@ -66,6 +78,9 @@ const authLimiter = rateLimit({
 app.use("/api", limiter);
 app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);
+
+// ─── Ensure DB connection (fixes Vercel serverless buffering timeout) ─────────
+app.use("/api", ensureDbConnection);
 
 // ─── Health Check ─────────────────────────────────────────────────────────────
 app.get("/health", (req, res) => {
